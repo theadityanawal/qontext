@@ -49,16 +49,36 @@ export default function LoginPage() {
         ID.unique(),
         state.email
       );
+
       setState(prev => ({
         ...prev,
         userId: sessionToken.userId,
         showOTPInput: true,
         isLoading: false
       }));
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Email token creation error:', error);
+
+      let errorMessage = 'Failed to send verification email';
+      if (error.code) {
+        switch (error.code) {
+          case 401:
+            errorMessage = 'Authentication failed. Please check your credentials.';
+            break;
+          case 429:
+            errorMessage = 'Too many attempts. Please try again later.';
+            break;
+          case 503:
+            errorMessage = 'Service temporarily unavailable. Please try again later.';
+            break;
+          default:
+            errorMessage = `Error: ${error.message || 'Unknown error occurred'}`;
+        }
+      }
+
       setState(prev => ({
         ...prev,
-        error: 'Failed to send verification email',
+        error: errorMessage,
         isLoading: false
       }));
     }
