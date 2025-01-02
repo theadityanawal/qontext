@@ -1,31 +1,43 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { collection, getDocs } from 'firebase/firestore'
-import { db } from '@/lib/firebase'
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import GoogleAuth from '@/components/GoogleAuth';
 
-export default function Page() {
-  const [todos, setTodos] = useState<any[]>([])
+export default function LoginPage() {
+  const router = useRouter();
 
   useEffect(() => {
-    const fetchTodos = async () => {
-      const querySnapshot = await getDocs(collection(db, 'todos'))
-      const todosList = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
-      setTodos(todosList)
-    }
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is signed in, redirect to dashboard
+        router.push('/dashboard');
+      }
+    });
 
-    fetchTodos()
-  }, [])
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, [router]);
 
   return (
-    <ul>
-      {todos.map((todo) => (
-        <li key={todo.id}>{todo.title}</li>
-      ))}
-    </ul>
-  )
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Welcome to qontxt
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Create AI-powered resumes tailored to your dream jobs
+          </p>
+        </div>
+        <div className="mt-8 space-y-6">
+          <div className="flex flex-col items-center">
+            <GoogleAuth />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
