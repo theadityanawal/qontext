@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase, checkDatabaseConnection } from '@/utils/supabase/server';
+import { supabase, checkDatabaseConnection } from '@/lib/supabase/server';
 
 export function useSupabase() {
   const [isConnected, setIsConnected] = useState<boolean>(false);

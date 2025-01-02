@@ -1,19 +1,30 @@
-'use client';
+'use client'
 
-import { useRouter } from 'next/navigation';
-import { createClient } from '@/utils/supabase/server'
-import { cookies } from 'next/headers'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { collection, getDocs } from 'firebase/firestore'
+import { db } from '@/lib/firebase'
 
-export default async function Page() {
-  const cookieStore = await cookies()
-  const supabase = createClient(cookieStore)
+export default function Page() {
+  const [todos, setTodos] = useState<any[]>([])
 
-  const { data: todos } = await supabase.from('todos').select()
+  useEffect(() => {
+    const fetchTodos = async () => {
+      const querySnapshot = await getDocs(collection(db, 'todos'))
+      const todosList = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }))
+      setTodos(todosList)
+    }
+
+    fetchTodos()
+  }, [])
 
   return (
     <ul>
-      {todos?.map((todo) => (
-        <li>{todo}</li>
+      {todos.map((todo) => (
+        <li key={todo.id}>{todo.title}</li>
       ))}
     </ul>
   )
